@@ -17,6 +17,7 @@ class Perceptron(object):
     # 打印学习到的权重、偏置项
     def __str__(self):
         return "weights\t:%s\nbias\t:%s" % (self.weights, self.bias)
+   
     # 前向输出结果:forword,predict;参数：输入向量input_vec;aim for test
     def predict(self, input_vec):
         sum=0
@@ -24,6 +25,7 @@ class Perceptron(object):
             sum += self.weights[i]*input_vec[i]
         predicted = self.activator(sum+self.bias)
         return predicted
+   
     # 一次迭代，把所有的训练数据过一遍  
     def _one_iteration(self, input_vecs, labels, rate):
         # 把输入和输出打包在一起，成为样本的列表[(input_vec, label), ...]  
@@ -35,6 +37,7 @@ class Perceptron(object):
             output = self.predict(input_vec)
             # 更新权重 
             self._update_weights(input_vec, output, label, rate)
+    
     # 按照感知器规则更新权重
     def _update_weights(self, input_vec, output, label, rate):
         # 把input_vec[x1,x2,x3,...]和weights[w1,w2,w3,...]打包在一起 
@@ -45,9 +48,10 @@ class Perceptron(object):
             self.weights[i] = self.weights[i] + rate * delta * input_vec[i]
         # 更新bias
         self.bias = self.bias + rate*delta
+    
     # input training data;输入训练数据：一组向量、与每个向量对应的label；以及训练轮数、学习率
     def train(self, input_vecs, labels, iterations, rate):
-        for i in range(iterations):
+        for _ in range(iterations):
             self._one_iteration(input_vecs, labels, rate)
     
 # 定义激活函数f
@@ -66,10 +70,11 @@ def get_training_dataset():
 
 # 使用and真值表训练感知器
 def train_and_perceptron():
-    # 创建感知器，输入参数个数为2（因为and是二元函数），激活函数为f
+    # 1. 创建感知器，输入参数个数为2（因为and是二元函数），激活函数为f
     p = Perceptron(2, f)
-    # 训练，迭代10轮, 学习速率为0.1
-    input_vecs, labels = get_training_dataset()  # 记载样本数据集 
+    # 2. 加载样本数据集
+    input_vecs, labels = get_training_dataset() 
+    # 3. 训练，迭代10轮, 学习速率为0.1 
     p.train(input_vecs, labels, 10, 0.1)
     # 返回训练好的感知器  
     return p
