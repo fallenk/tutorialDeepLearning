@@ -379,7 +379,7 @@ def gradient_check_test():
 
 if __name__ == '__main__':
     # network 4 steps
-    # 1. define neural network(activator) 
+    # 1. define neural network(with activator) 
     # 2. define loss f and Back propagation 
     # 3. train all data 
     # 4. test
