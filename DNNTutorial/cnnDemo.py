@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
-#_*_ coding: utf-8 _*_
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 
-# realize CNN with numpy
-# 『层』成为了我们最核心的组件。这是因为卷积神经网络有不同的层，而每种层的算法都在对应的类中实现。
+
 import numpy as np
 from activators import ReluActivator, IdentityActivator
+
 
 # 获取卷积区域
 def get_patch(input_array, i, j, filter_width,
@@ -23,6 +23,8 @@ def get_patch(input_array, i, j, filter_width,
         return input_array[:, 
             start_i : start_i + filter_height, 
             start_j : start_j + filter_width]
+       
+
 # 获取一个2D区域的最大值所在的索引
 def get_max_index(array):
     max_i = 0
@@ -34,6 +36,7 @@ def get_max_index(array):
                 max_value = array[i,j]
                 max_i, max_j = i, j
     return max_i, max_j
+
 
 # 计算卷积
 def conv(input_array, 
@@ -54,11 +57,14 @@ def conv(input_array,
                 get_patch(input_array, i, j, kernel_width, 
                     kernel_height, stride) * kernel_array
                 ).sum() + bias
+
+
 # 为数组增加Zero padding
 def padding(input_array, zp):
     '''
     为数组增加Zero padding，自动适配输入为2D和3D的情况
     '''
+    # python / 和 // 区别
     zp = int(zp)
     if zp == 0:
         return input_array
@@ -70,7 +76,7 @@ def padding(input_array, zp):
             padded_array = np.zeros((
                 input_depth, 
                 input_height + 2 * zp,
-                input_width + 2 * zp))
+                input_width + 2 * zp), dtype=np.int8)
             padded_array[:,
                 zp : zp + input_height,
                 zp : zp + input_width] = input_array
@@ -85,40 +91,44 @@ def padding(input_array, zp):
                 zp : zp + input_width] = input_array
             return padded_array
 
+
 # 对numpy数组进行element wise操作
 def element_wise_op(array, op):
     for i in np.nditer(array,
                        op_flags=['readwrite']):
         i[...] = op(i)
 
-# Filter类保存了卷积层的参数以及梯度，并且实现了用梯度下降算法来更新参数。
+
 class Filter(object):
     def __init__(self, width, height, depth):
-        '''
-        参数的初始化采用了常用的策略，即：权重随机初始化为一个很小的值，而偏置项初始化为0。
-        '''
-        self.weights = np.random.uniform(-1e-4, 1e-4, (depth, height, width))
+        self.weights = np.random.uniform(-1e-4, 1e-4,
+            (depth, height, width))
         self.bias = 0
-        # 梯度
-        self.weights_grad = np.zeros(self.weights.shape)
+        self.weights_grad = np.zeros(
+            self.weights.shape)
         self.bias_grad = 0
+
     def __repr__(self):
-        return 'filter weights:\n%s\nbias:\n%s' % (repr(self.weights), repr(self.bias))
+        return 'filter weights:\n%s\nbias:\n%s' % (
+            repr(self.weights), repr(self.bias))
+
     def get_weights(self):
         return self.weights
+
     def get_bias(self):
         return self.bias
+
     def update(self, learning_rate):
         self.weights -= learning_rate * self.weights_grad
         self.bias -= learning_rate * self.bias_grad
 
 
-# 卷积层的实现
-# 使用一个ConLayer类实现一个卷积层：初始化一个卷积层，可以在构造函数中设置卷积层的超参数
 class ConvLayer(object):
-    def __init__(self, input_width, input_height, channel_number, 
-                    filter_width, filter_height, filter_number,
-                    zero_padding, stride, activator, learning_rate):
+    def __init__(self, input_width, input_height, 
+                 channel_number, filter_width, 
+                 filter_height, filter_number, 
+                 zero_padding, stride, activator,
+                 learning_rate):
         self.input_width = input_width
         self.input_height = input_height
         self.channel_number = channel_number
@@ -127,37 +137,39 @@ class ConvLayer(object):
         self.filter_number = filter_number
         self.zero_padding = zero_padding
         self.stride = stride
-        # filters 
-        self.filters = []
-        for i in range(self.filter_number):
-            self.filters.append(Filter(filter_width, filter_height, self.channel_number))
-        # convolution 输出层
         self.output_width = \
-            ConvLayer.caculate_output_size(self.input_width, filter_width, zero_padding, stride)
+            int(ConvLayer.calculate_output_size(
+            self.input_width, filter_width, zero_padding,
+            stride))
         self.output_height = \
-            ConvLayer.caculate_output_size(self.input_height, filter_height, zero_padding, stride)
+            int(ConvLayer.calculate_output_size(
+            self.input_height, filter_height, zero_padding,
+            stride))
         self.output_array = np.zeros((self.filter_number, 
             self.output_height, self.output_width))
+        self.filters = []
+        for i in range(filter_number):
+            self.filters.append(Filter(filter_width, 
+                filter_height, self.channel_number))
         self.activator = activator
         self.learning_rate = learning_rate
-    
-    # 卷积层前向计算的实现
+
     def forward(self, input_array):
         '''
         计算卷积层的输出
         输出结果保存在self.output_array
         '''
         self.input_array = input_array
-        # 将输入图像补0
-        self.padded_input_array = padding(input_array, self.zero_padding)
-        # 循环每一个filter, 卷积
+        self.padded_input_array = padding(input_array,
+            self.zero_padding)
         for f in range(self.filter_number):
             filter = self.filters[f]
-            conv(self.padded_input_array, filter.get_weights(), self.output_array[f], self.stride, filter.get_bias())
-        # element_wise_op函数实现了对numpy数组进行按元素操作，并将返回值写回到数组中
-        element_wise_op(self.output_array, self.activator.forward)
-    
-
+            conv(self.padded_input_array, 
+                filter.get_weights(), self.output_array[f],
+                self.stride, filter.get_bias())
+        element_wise_op(self.output_array, 
+                        self.activator.forward)
+        
     def backward(self, input_array, sensitivity_array, 
                  activator):
         '''
@@ -169,14 +181,14 @@ class ConvLayer(object):
         self.bp_sensitivity_map(sensitivity_array,
                                 activator)
         self.bp_gradient(sensitivity_array)
+
     def update(self):
         '''
         按照梯度下降，更新权重
         '''
         for filter in self.filters:
             filter.update(self.learning_rate)
-    # 反向传播算法需要完成几个任务
-    # 1. 将误差传到上一层 2. 计算每个参数的梯度 3. 更新参数
+
     def bp_sensitivity_map(self, sensitivity_array,
                            activator):
         '''
@@ -192,7 +204,7 @@ class ConvLayer(object):
         # 但这个残差不需要继续向上传递，因此就不计算了
         expanded_width = expanded_array.shape[2]
         zp = (self.input_width +  
-              self.filter_width - 1 - expanded_width) / 2
+              self.filter_width - 1 - expanded_width) // 2
         padded_array = padding(expanded_array, zp)
         # 初始化delta_array，用于保存传递到上一层的
         # sensitivity map
@@ -203,23 +215,18 @@ class ConvLayer(object):
         for f in range(self.filter_number):
             filter = self.filters[f]
             # 将filter权重翻转180度
-            flipped_weights = np.array(map(
-                lambda i: np.rot90(i, 2), 
-                filter.get_weights()))
+            flipped_weights = np.array(list(map(lambda i: np.rot90(i, 2), filter.get_weights())))
             # 计算与一个filter对应的delta_array
             delta_array = self.create_delta_array()
             for d in range(delta_array.shape[0]):
-                conv(padded_array[f], flipped_weights[d],
-                    delta_array[d], 1, 0)
+                conv(padded_array[f], flipped_weights[d], delta_array[d], 1, 0)
             self.delta_array += delta_array
         # 将计算结果与激活函数的偏导数做element-wise乘法操作
         derivative_array = np.array(self.input_array)
         element_wise_op(derivative_array, 
                         activator.backward)
         self.delta_array *= derivative_array
-    
-    
-    # 计算梯度
+
     def bp_gradient(self, sensitivity_array):
         # 处理卷积步长，对原始sensitivity map进行扩展
         expanded_array = self.expand_sensitivity_map(
@@ -233,7 +240,7 @@ class ConvLayer(object):
                      filter.weights_grad[d], 1, 0)
             # 计算偏置项的梯度
             filter.bias_grad = expanded_array[f].sum()
-    # expand_sensitivity_map方法就是将步长为S的sensitivity map『还原』为步长为1的sensitivity map
+
     def expand_sensitivity_map(self, sensitivity_array):
         depth = sensitivity_array.shape[0]
         # 确定扩展后sensitivity map的大小
@@ -253,16 +260,17 @@ class ConvLayer(object):
                 expand_array[:,i_pos,j_pos] = \
                     sensitivity_array[:,i,j]
         return expand_array
-    # create_delta_array是创建用来保存传递到上一层的sensitivity map的数组。
+
     def create_delta_array(self):
         return np.zeros((self.channel_number,
             self.input_height, self.input_width))
-    # 函数用来确定卷积层输出的大小
-    @staticmethod
-    def caculate_output_size(input_size, filter_size, zero_padding, stride):
-        return (input_size - filter_size + 2 * zero_padding) / stride + 1
 
-# pooling 层
+    @staticmethod
+    def calculate_output_size(input_size,
+            filter_size, zero_padding, stride):
+        return (input_size - filter_size + 
+            2 * zero_padding) / stride + 1
+
 
 class MaxPoolingLayer(object):
     def __init__(self, input_width, input_height, 
@@ -306,7 +314,8 @@ class MaxPoolingLayer(object):
                         i * self.stride + k, 
                         j * self.stride + l] = \
                         sensitivity_array[d,i,j]
-# 卷积层的梯度检查
+
+
 def init_test():
     a = np.array(
         [[[0,1,1,0,2],
@@ -354,6 +363,8 @@ def init_test():
           [-1,0,1],
           [-1,0,0]]], dtype=np.float64)
     return a, b, cl
+
+
 def test():
     a, b, cl = init_test()
     cl.forward(a)
@@ -399,6 +410,8 @@ def gradient_check():
                 cl.filters[0].weights[d,i,j] += epsilon
                 print('weights(%d,%d,%d): expected - actural %f - %f' % (
                     d, i, j, expect_grad, cl.filters[0].weights_grad[d,i,j]))
+
+
 def init_pool_test():
     a = np.array(
         [[[1,1,2,4],
@@ -433,6 +446,6 @@ def test_pool_bp():
     mpl.backward(a, b)
     print('input array:\n%s\nsensitivity array:\n%s\ndelta array:\n%s' % (
         a, b, mpl.delta_array))
-    
-if __name__=="__main__":
+
+if __name__ == "__main__":
     gradient_check()
