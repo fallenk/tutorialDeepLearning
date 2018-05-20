@@ -128,7 +128,8 @@ def clientUpdate(k, wt):
     Pk = test_images.shape[0]
     B = 64
     batch_size = B
-    
+    # 2. 传入参数， 训练数据，测试数据, 得到返回参数
+
     pass
 
 # server excute
@@ -161,3 +162,5 @@ def server(w0 = 0):
         for k in range(len(listWAndnk)):
             wt = (listWAndnk[k][0]*listWAndnk[k][1])/n
     print("更新后的wt:", wt)
+if __name__ == "__main__":
+    server(0)
