@@ -117,20 +117,30 @@ for epoch in range(1):
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "  epoch: %5d , val_acc: %.4f  avg_val_loss: %.4f" % (
         epoch, val_acc / float(test_images.shape[0]), val_loss / test_images.shape[0]))
 
+def trainAndTest(k, wt, batch_size, epoch):
+    '''
+    :param k: client k 编号
+    :param wt: 全局参数
+    :param batch_size: 每一个batch大小
+    :param epoch: 整体训练次数
+    :return: 训练好的参数w， 所用训练的数据集个数
+    '''
+
+
 # client k
 def clientUpdate(k, wt):
     '''
     :param k: client k-编号
     :param wt: 传入的全局参数
-    :return: newWkt, nk: 更新后的wt, 本地测试数据集的个数
+    :return: newWkt, nk: 更新后的wt, 本地训练数据集的个数
     '''
     # 1. 数据集分块 根据Pk按batch_size为B进行分块
-    Pk = test_images.shape[0]
     B = 64
     batch_size = B
-    # 2. 传入参数， 训练数据，测试数据, 得到返回参数
-
-    pass
+    epoch = 1
+    # 2. 传入参数， 训练数据(根据k进行识别编号)，测试数据, 得到返回参数
+    newWkt, nk = trainAndTest(k, wt, batch_size, epoch)
+    return newWkt, nk
 
 # server excute
 def server(w0 = 0):
