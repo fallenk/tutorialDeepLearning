@@ -25,7 +25,7 @@ class AvgPooling(object):
                         else:
                             self.integral[b, i, j, c] = self.integral[b, i - 1, j, c] + row_sum
 
-        out = np.zeros([x.shape[0], x.shape[1] / self.stride, x.shape[2] / self.stride, self.output_channels],
+        out = np.zeros([x.shape[0], x.shape[1] // self.stride, x.shape[2] // self.stride, self.output_channels],
                        dtype=float)
 
         # integral calculate pooling
@@ -35,17 +35,17 @@ class AvgPooling(object):
                     for j in range(0, x.shape[2], self.stride):
                         self.index[b, i:i + self.ksize, j:j + self.ksize, c] = 1
                         if i == 0 and j == 0:
-                            out[b, i / self.stride, j / self.stride, c] = self.integral[
+                            out[b, i // self.stride, j // self.stride, c] = self.integral[
                                 b, self.ksize - 1, self.ksize - 1, c]
 
                         elif i == 0:
-                            out[b, i / self.stride, j / self.stride, c] = self.integral[b, 1, j + self.ksize - 1, c] - \
+                            out[b, i // self.stride, j // self.stride, c] = self.integral[b, 1, j + self.ksize - 1, c] - \
                                                                           self.integral[b, 1, j - 1, c]
                         elif j == 0:
-                            out[b, i / self.stride, j / self.stride, c] = self.integral[b, i + self.ksize - 1, 1, c] - \
+                            out[b, i // self.stride, j // self.stride, c] = self.integral[b, i + self.ksize - 1, 1, c] - \
                                                                           self.integral[b, i - 1, 1, c]
                         else:
-                            out[b, i / self.stride, j / self.stride, c] = self.integral[
+                            out[b, i // self.stride, j // self.stride, c] = self.integral[
                                                                               b, i + self.ksize - 1, j + self.ksize - 1, c] - \
                                                                           self.integral[
                                                                               b, i - 1, j + self.ksize - 1, c] - \
@@ -53,7 +53,7 @@ class AvgPooling(object):
                                                                               b, i + self.ksize - 1, j - 1, c] + \
                                                                           self.integral[b, i - 1, j - 1, c]
 
-        out /= (self.ksize * self.ksize)
+        out //= (self.ksize * self.ksize)
         return out
 
     def gradient(self, eta):
@@ -71,19 +71,19 @@ class MaxPooling(object):
         self.stride = stride
         self.output_channels = shape[-1]
         self.index = np.zeros(shape)
-        self.output_shape = [shape[0], shape[1] / self.stride, shape[2] / self.stride, self.output_channels]
+        self.output_shape = [shape[0], shape[1] // self.stride, shape[2] // self.stride, self.output_channels]
 
     def forward(self, x):
-        out = np.zeros([x.shape[0], x.shape[1] / self.stride, x.shape[2] / self.stride, self.output_channels])
+        out = np.zeros([x.shape[0], x.shape[1] // self.stride, x.shape[2] // self.stride, self.output_channels])
 
         for b in range(x.shape[0]):
             for c in range(self.output_channels):
                 for i in range(0, x.shape[1], self.stride):
                     for j in range(0, x.shape[2], self.stride):
-                        out[b, i / self.stride, j / self.stride, c] = np.max(
+                        out[b, i // self.stride, j // self.stride, c] = np.max(
                             x[b, i:i + self.ksize, j:j + self.ksize, c])
                         index = np.argmax(x[b, i:i + self.ksize, j:j + self.ksize, c])
-                        self.index[b, i+index/self.stride, j + index % self.stride, c] = 1
+                        self.index[b, i+index//self.stride, j + index % self.stride, c] = 1
         return out
 
     def gradient(self, eta):

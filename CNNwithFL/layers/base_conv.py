@@ -7,6 +7,9 @@ import math
 class Conv2D(object):
     # 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
     def __init__(self, shape, output_channels, ksize=3, stride=1, method='VALID'):
+        '''
+        输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
+        '''
         self.input_shape = shape
         self.output_channels = output_channels
         self.input_channels = shape[-1]
@@ -21,11 +24,11 @@ class Conv2D(object):
         self.bias = np.random.standard_normal(self.output_channels) / weights_scale
 
         if method == 'VALID':
-            self.eta = np.zeros((shape[0], (shape[1] - ksize + 1) / self.stride, (shape[1] - ksize + 1) / self.stride,
+            self.eta = np.zeros((shape[0], int((shape[1] - ksize + 1) / self.stride), int((shape[1] - ksize + 1) / self.stride),
              self.output_channels))
 
         if method == 'SAME':
-            self.eta = np.zeros((shape[0], shape[1]/self.stride, shape[2]/self.stride,self.output_channels))
+            self.eta = np.zeros((shape[0], shape[1]//self.stride, shape[2]//self.stride,self.output_channels))
 
         self.w_gradient = np.zeros(self.weights.shape)
         self.b_gradient = np.zeros(self.bias.shape)

@@ -12,7 +12,7 @@ import struct
 from glob import glob
 
 def load_mnist(path, kind='train'):
-    """Load MNIST data from `path`"""
+    """Load MNIST data from path`"""
     images_path = glob('./%s/%s*3-ubyte' % (path, kind))[0]
     labels_path = glob('./%s/%s*1-ubyte' % (path, kind))[0]
     with open(labels_path, 'rb') as lbpath:
@@ -55,7 +55,7 @@ for epoch in range(1):
     # train
     train_acc = 0
     train_loss = 0
-    for i in range(images.shape[0] / batch_size):
+    for i in range(images.shape[0] // batch_size):
         img = images[i * batch_size:(i + 1) * batch_size].reshape([batch_size, 28, 28, 1])
         label = labels[i * batch_size:(i + 1) * batch_size]
         conv1_out = relu1.forward(conv1.forward(img))
@@ -100,7 +100,7 @@ for epoch in range(1):
             epoch, train_acc / float(images.shape[0]), train_loss / images.shape[0]))
 
     # validation
-    for i in range(test_images.shape[0] / batch_size):
+    for i in range(test_images.shape[0] // batch_size):
         img = test_images[i * batch_size:(i + 1) * batch_size].reshape([batch_size, 28, 28, 1])
         label = test_labels[i * batch_size:(i + 1) * batch_size]
         conv1_out = relu1.forward(conv1.forward(img))

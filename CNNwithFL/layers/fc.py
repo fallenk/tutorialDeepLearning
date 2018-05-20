@@ -8,7 +8,7 @@ class FullyConnect(object):
         self.input_shape = shape
         self.batchsize = shape[0]
 
-        input_len = reduce(lambda x, y: x * y, shape[1:])
+        input_len = int(reduce(lambda x, y: x * y, shape[1:]))
 
         self.weights = np.random.standard_normal((input_len, output_num))/100
         self.bias = np.random.standard_normal(output_num)/100
