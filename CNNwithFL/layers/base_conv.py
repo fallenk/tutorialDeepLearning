@@ -32,9 +32,9 @@ class Conv2D(object):
         self.output_shape = self.eta.shape
 
         if (shape[1] - ksize) % stride != 0:
-            print 'input tensor width can\'t fit stride'
+            print('input tensor width can\'t fit stride')
         if (shape[2] - ksize) % stride != 0:
-            print 'input tensor height can\'t fit stride'
+            print('input tensor height can\'t fit stride')
 
     def forward(self, x):
         col_weights = self.weights.reshape([-1, self.output_channels])
@@ -124,6 +124,6 @@ if __name__ == "__main__":
     next = conv.forward(img)
     next1 = next.copy() + 1
     conv.gradient(next1-next)
-    print conv.w_gradient
-    print conv.b_gradient
+    print(conv.w_gradient)
+    print(conv.b_gradient)
     conv.backward()
