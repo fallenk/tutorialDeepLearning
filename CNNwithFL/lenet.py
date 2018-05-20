@@ -117,3 +117,47 @@ for epoch in range(1):
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "  epoch: %5d , val_acc: %.4f  avg_val_loss: %.4f" % (
         epoch, val_acc / float(test_images.shape[0]), val_loss / test_images.shape[0]))
 
+# client k
+def clientUpdate(k, wt):
+    '''
+    :param k: client k-编号
+    :param wt: 传入的全局参数
+    :return: newWkt, nk: 更新后的wt, 本地测试数据集的个数
+    '''
+    # 1. 数据集分块 根据Pk按batch_size为B进行分块
+    Pk = test_images.shape[0]
+    B = 64
+    batch_size = B
+    
+    pass
+
+# server excute
+def server(w0 = 0):
+    '''
+    :param w0: 训练的参数
+    :return:
+    '''
+    # 1. initialize w0
+    # w0 = np.zeros()
+    # 2. 总的全局训练次数
+    t = 1
+    wt = w0 # 初始化
+    for _ in range(t):
+        # 3. 选择一批client 集合
+        # m←max(C ·K, 1): m 为c个clients和
+        # St ←(random set of m clients) : 每次从m个中选取St个clients
+        st = np.array([1, 2])
+        listWAndnk = []
+
+        # 客户端的训练个数
+        n = 0
+        for k in range(len(st)):
+            # newWt为当前client k的训练所得的参数；nk为client k的本地的训练集个数；
+            newWkt, nk = clientUpdate(k, wt)
+            n += nk
+            listWAndnk.append((newWkt, nk))
+        # 4. 更新w值(加权平均)
+        # Wt+1 <-- sum(Nk/n * Wt+1): 即n个clients的参数加权求和得出全局的Wt+1
+        for k in range(len(listWAndnk)):
+            wt = (listWAndnk[k][0]*listWAndnk[k][1])/n
+    print("更新后的wt:", wt)
