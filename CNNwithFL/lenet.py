@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # _*_ coding:utf-8 _*_
 import numpy as np
 from layers.base_conv import Conv2D

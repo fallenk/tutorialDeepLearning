@@ -1,5 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+import matplotlib as plt
 # import cv2
 
 
@@ -96,9 +97,9 @@ if __name__ == "__main__":
     pool = MaxPooling(img.shape, 2, 2)
     img1 = pool.forward(img)
     img2 = pool.gradient(img1)
-    print img[1,:,:,1]
-    print img1[1,:,:,1]
-    print img2[1,:,:,1]
+    print(img[1,:,:,1])
+    print(img1[1,:,:,1])
+    print(img2[1,:,:,1])
 
     plt.imshow(img1[0])
     plt.show()

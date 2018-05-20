@@ -52,8 +52,8 @@ if __name__ == "__main__":
 
     fc.gradient(np.array([[1, -2],[3,4]]))
 
-    print fc.w_gradient
-    print fc.b_gradient
+    print(fc.w_gradient)
+    print(fc.b_gradient)
 
     fc.backward()
-    print fc.weights
+    print(fc.weights)
