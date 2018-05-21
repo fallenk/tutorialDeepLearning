@@ -6,7 +6,7 @@ import math
 
 class Conv2D(object):
     # 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
-    def __init__(self, shape, output_channels, ksize=3, stride=1, method='VALID'):
+    def __init__(self, shape, output_channels, ksize=3, stride=1, method='VALID', wt=0):
         '''
         输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
         '''

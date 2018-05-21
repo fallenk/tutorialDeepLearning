@@ -26,96 +26,84 @@ def load_mnist(path, kind='train'):
                                                imgpath.read(16))
         images = np.fromfile(imgpath,
                              dtype=np.uint8).reshape(len(labels), 784)
+    # 将images和labels分类 1, 2, .. 0
+    # 循环 labels,新建10个images,labels,判断是都等于某个数， 筛选建立shape为(10, images),(10, labels)
+    # listdata = []
+    # for j in range(len(labels)):
+    #     listdata.append(images[j])
 
-    return images, labels
+    imagesOne = []
+    labelsOne = []
+
+    imagesTwo = []
+    labelsTwo = []
+
+    imagesThree = []
+    labelsThree = []
+
+    imagesFour = []
+    labelsFour = []
+
+    imagesFive = []
+    labelsFive = []
+
+    imagesSix = []
+    labelsSix = []
+
+    imagesSeven = []
+    labelsSeven = []
+
+    imagesEight = []
+    labelsEight = []
+
+    imagesNine = []
+    labelsNine = []
+
+    imagesZero = []
+    labelsZero = []
+    for i in range(len(labels)):
+        num =  labels[i]
+        if num == 0:
+            imagesZero.append(images[i])
+            labelsZero.append(labels[i])
+        elif num == 1:
+            imagesOne.append(images[i])
+            labelsOne.append(labels[i])
+        elif num == 2:
+            imagesTwo.append(images[i])
+            labelsTwo.append(labels[i])
+        elif num == 3:
+            imagesThree.append(images[i])
+            labelsThree.append(labels[i])
+        elif num == 4:
+            imagesFour.append(images[i])
+            labelsFour.append(labels[i])
+        elif num == 5:
+            imagesFive.append(images[i])
+            labelsFive.append(labels[i])
+        elif num == 6:
+            imagesSix.append(images[i])
+            labelsSix.append(labels[i])
+        elif num == 7:
+            imagesSeven.append(images[i])
+            labelsSeven.append(labels[i])
+        elif num == 8:
+            imagesEight.append(images[i])
+            labelsEight.append(labels[i])
+        elif num == 9:
+            imagesNine.append(images[i])
+            labelsNine.append(labels[i])
+    categoryImages = [imagesZero, imagesOne, imagesTwo, imagesThree, imagesFour, imagesFive, imagesSix, imagesSeven,imagesEight, imagesNine]
+    categoryLabels = [labelsZero, labelsOne, labelsTwo, labelsThree, labelsFour, labelsFive, labelsSix, labelsSeven, labelsEight, labelsNine]
 
 
-images, labels = load_mnist('./data/mnist')
-test_images, test_labels = load_mnist('./data/mnist', 't10k')
+    return categoryImages, categoryLabels
+
+
+categoryImages, categoryLabels = load_mnist('./data/mnist')
+test_categoryImages, test_categoryLabels = load_mnist('./data/mnist', 't10k')
 batch_size = 64
-# 定义 两个 卷积层和pool层
-# 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
-conv1 = Conv2D([batch_size, 28, 28, 1], 12, 5, 1)
-relu1 = Relu(conv1.output_shape)
-pool1 = MaxPooling(relu1.output_shape)
-conv2 = Conv2D(pool1.output_shape, 24, 3, 1)
-relu2 = Relu(conv2.output_shape)
-pool2 = MaxPooling(relu2.output_shape)
-fc = FullyConnect(pool2.output_shape, 10)
-sf = Softmax(fc.output_shape)
 
-# 定义epoch
-for epoch in range(1):
-    learning_rate = 1e-5    # 学习率
-    batch_loss = 0          # 损失函数
-    batch_acc = 0           # 正确率
-    val_acc = 0             # 总的正确率
-    val_loss = 0            # 损失率
-
-    # train
-    train_acc = 0
-    train_loss = 0
-    for i in range(images.shape[0] // batch_size):
-        img = images[i * batch_size:(i + 1) * batch_size].reshape([batch_size, 28, 28, 1])
-        label = labels[i * batch_size:(i + 1) * batch_size]
-        conv1_out = relu1.forward(conv1.forward(img))
-        pool1_out = pool1.forward(conv1_out)
-        conv2_out = relu2.forward(conv2.forward(pool1_out))
-        pool2_out = pool2.forward(conv2_out)
-        fc_out = fc.forward(pool2_out)
-        # print i, 'fc_out', fc_out
-        batch_loss += sf.cal_loss(fc_out, np.array(label))
-        train_loss += sf.cal_loss(fc_out, np.array(label))
-
-        for j in range(batch_size):
-            if np.argmax(sf.softmax[j]) == label[j]:
-                batch_acc += 1
-                train_acc += 1
-
-        sf.gradient()
-        conv1.gradient(relu1.gradient(pool1.gradient(
-            conv2.gradient(relu2.gradient(pool2.gradient(
-                fc.gradient(sf.eta)))))))
-
-        if i % 1 == 0:
-            # TO-DO 传出参数，
-            fc.backward(alpha=learning_rate, weight_decay=0.0004)
-            conv2.backward(alpha=learning_rate, weight_decay=0.0004)
-            conv1.backward(alpha=learning_rate, weight_decay=0.0004)
-
-            if i % 50 == 0:
-                # print time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + \
-                #       "  epoch: %d ,  batch: %5d , avg_batch_acc: %.4f  avg_batch_loss: %.4f  learning_rate %f" % (epoch,
-                #                                                                                  i, batch_acc / float(
-                #           batch_size), batch_loss / batch_size, learning_rate)
-                print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + \
-                      "  epoch: %d ,  batch: %5d " % (epoch, i))
-
-            batch_loss = 0
-            batch_acc = 0
-
-
-    print(time.strftime("%Y-%m-%d %H:%M:%S",
-                            time.localtime()) + "  epoch: %5d , train_acc: %.4f  avg_train_loss: %.4f" % (
-            epoch, train_acc / float(images.shape[0]), train_loss / images.shape[0]))
-
-    # validation
-    for i in range(test_images.shape[0] // batch_size):
-        img = test_images[i * batch_size:(i + 1) * batch_size].reshape([batch_size, 28, 28, 1])
-        label = test_labels[i * batch_size:(i + 1) * batch_size]
-        conv1_out = relu1.forward(conv1.forward(img))
-        pool1_out = pool1.forward(conv1_out)
-        conv2_out = relu2.forward(conv2.forward(pool1_out))
-        pool2_out = pool2.forward(conv2_out)
-        fc_out = fc.forward(pool2_out)
-        val_loss += sf.cal_loss(fc_out, np.array(label))
-
-        for j in range(batch_size):
-            if np.argmax(sf.softmax[j]) == label[j]:
-                val_acc += 1
-
-    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + "  epoch: %5d , val_acc: %.4f  avg_val_loss: %.4f" % (
-        epoch, val_acc / float(test_images.shape[0]), val_loss / test_images.shape[0]))
 
 def trainAndTest(k, wt, batch_size, epoch):
     '''
@@ -123,8 +111,110 @@ def trainAndTest(k, wt, batch_size, epoch):
     :param wt: 全局参数
     :param batch_size: 每一个batch大小
     :param epoch: 整体训练次数
-    :return: 训练好的参数w， 所用训练的数据集个数
+    :return: 训练好的参数wt， 所用训练的数据集个数nk(根据k的大小)
     '''
+    # 定义 两个 卷积层和pool层
+    # 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
+    conv1 = Conv2D([batch_size, 28, 28, 1], 12, 5, 1)
+    relu1 = Relu(conv1.output_shape)
+    pool1 = MaxPooling(relu1.output_shape)
+    conv2 = Conv2D(pool1.output_shape, 24, 3, 1)
+    relu2 = Relu(conv2.output_shape)
+    pool2 = MaxPooling(relu2.output_shape)
+    fc = FullyConnect(pool2.output_shape, 10)
+    sf = Softmax(fc.output_shape)
+
+
+    # 根据k 数据分类
+    images = np.asarray(categoryImages[k])
+    labels = np.asarray(categoryLabels[k])
+    test_images = np.asarray(test_categoryImages[k])
+    test_labels = np.asarray(test_categoryLabels[k])
+    #
+    nk = len(labels)
+
+    # 定义epoch
+    for epoch in range(epoch):
+        learning_rate = 1e-5  # 学习率
+        batch_loss = 0  # 损失函数
+        batch_acc = 0  # 正确率
+        val_acc = 0  # 总的正确率
+        val_loss = 0  # 损失率
+
+
+        # train
+        train_acc = 0
+        train_loss = 0
+
+        for i in range(images.shape[0] // batch_size):
+            img = images[i * batch_size:(i + 1) * batch_size].reshape([batch_size, 28, 28, 1])
+            label = labels[i * batch_size:(i + 1) * batch_size]
+            conv1_out = relu1.forward(conv1.forward(img))
+            pool1_out = pool1.forward(conv1_out)
+            conv2_out = relu2.forward(conv2.forward(pool1_out))
+            pool2_out = pool2.forward(conv2_out)
+            fc_out = fc.forward(pool2_out)
+
+            # print(i, 'fc_out', fc_out)
+
+            batch_loss += sf.cal_loss(fc_out, np.array(label))
+            train_loss += sf.cal_loss(fc_out, np.array(label)) # 总的loss
+
+            # image和label匹配并且
+            for j in range(batch_size):
+                if np.argmax(sf.softmax[j]) == label[j]:
+                    # print(label[j])
+                    batch_acc += 1
+                    train_acc += 1
+
+            sf.gradient()
+            conv1.gradient(relu1.gradient(pool1.gradient(
+                conv2.gradient(relu2.gradient(pool2.gradient(
+                    fc.gradient(sf.eta)))))))
+
+            if i % 1 == 0:
+                # TO-DO 更新参数
+                fc.backward(alpha=learning_rate, weight_decay=0.0004)
+                conv2.backward(alpha=learning_rate, weight_decay=0.0004)
+                conv1.backward(alpha=learning_rate, weight_decay=0.0004)
+
+                if i % 50 == 0:
+                    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + \
+                          "  epoch: %d ,  batch: %5d , avg_batch_acc: %.4f  avg_batch_loss: %.4f  learning_rate %f" % (epoch,
+                                                                                                     i, batch_acc / float(
+                              batch_size), batch_loss / batch_size, learning_rate))
+                    # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + \
+                    #       "  epoch: %d ,  batch: %5d " % (epoch, i))
+
+                batch_loss = 0
+                batch_acc = 0
+
+        print(time.strftime("%Y-%m-%d %H:%M:%S",
+                            time.localtime()) + "  epoch: %5d ,client train label:%s, train_acc: %.4f  avg_train_loss: %.4f" % (
+                  epoch, labels[0], train_acc / float(images.shape[0]), train_loss / images.shape[0]))
+
+        # validation
+        for i in range(test_images.shape[0] // batch_size):
+            img = test_images[i * batch_size:(i + 1) * batch_size].reshape([batch_size, 28, 28, 1])
+            label = test_labels[i * batch_size:(i + 1) * batch_size]
+            conv1_out = relu1.forward(conv1.forward(img))
+            pool1_out = pool1.forward(conv1_out)
+            conv2_out = relu2.forward(conv2.forward(pool1_out))
+            pool2_out = pool2.forward(conv2_out)
+            fc_out = fc.forward(pool2_out)
+            val_loss += sf.cal_loss(fc_out, np.array(label))
+
+            for j in range(batch_size):
+                if np.argmax(sf.softmax[j]) == label[j]:
+                    val_acc += 1
+
+        print(time.strftime("%Y-%m-%d %H:%M:%S",
+                            time.localtime()) + "  epoch: %5d ,client test label:%s, val_acc: %.4f  avg_val_loss: %.4f" % (
+                  epoch, test_labels[0], val_acc / float(test_images.shape[0]), val_loss / test_images.shape[0]))
+
+    wt = (conv1.weights, conv1.bias)
+    return wt, nk
+
 
 
 # client k
@@ -138,11 +228,15 @@ def clientUpdate(k, wt):
     B = 64
     batch_size = B
     epoch = 1
+    print("client %d will begin training" % k)
     # 2. 传入参数， 训练数据(根据k进行识别编号)，测试数据, 得到返回参数
     newWkt, nk = trainAndTest(k, wt, batch_size, epoch)
+    print("======>newWkt:\n", newWkt)
+    print("======>nk:\n", nk)
+    print("client %d train finished" % k)
     return newWkt, nk
 
-# server excute
+# server execute
 def server(w0 = 0):
     '''
     :param w0: 训练的参数
@@ -157,7 +251,7 @@ def server(w0 = 0):
         # 3. 选择一批client 集合
         # m←max(C ·K, 1): m 为c个clients和
         # St ←(random set of m clients) : 每次从m个中选取St个clients
-        st = np.array([1, 2])
+        st = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         listWAndnk = []
 
         # 客户端的训练个数
@@ -173,4 +267,5 @@ def server(w0 = 0):
             wt = (listWAndnk[k][0]*listWAndnk[k][1])/n
     print("更新后的wt:", wt)
 if __name__ == "__main__":
+
     server(0)
