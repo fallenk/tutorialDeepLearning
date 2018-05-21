@@ -25,9 +25,9 @@ class Conv2D(object):
         self.bias = np.random.standard_normal(self.output_channels) / weights_scale
         # TODO(fallenkliu@gmail.com): if global train times > 1 change weights and bias
         # 判断传入参数 非0则表示
-        if wt != 0:
-            self.weights = wt[0]
-            self.bias = wt[1]
+        # if wt != 0:
+        #     self.weights = wt[0]
+        #     self.bias = wt[1]
 
         if method == 'VALID':
             self.eta = np.zeros((shape[0], int((shape[1] - ksize + 1) / self.stride), int((shape[1] - ksize + 1) / self.stride),

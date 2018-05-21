@@ -246,17 +246,18 @@ def server(w0 = 0):
     # w0 = np.zeros()
     # TODO(fallekliu@gmail.com): global train times
     # 2. 总的全局训练次数
-    t = 1
+    t = 2
     wt = w0 # 初始化 t
-    for _ in range(t):
+    sumN = 0 # 全局总的训练集个数
+    for i in range(t):
         # 3. 选择一批client 集合
         # m←max(C ·K, 1): m 为c个clients和
         # St ←(random set of m clients) : 每次从m个中选取St个clients
-        # st = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        st = np.array([0])
+        st = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        # st = np.array([0])
         listWAndnk = [] # 当前一次总的训练得到的参数
 
-        # 所有clients 训练的训练数据集
+        # 所有clients 训练的训练数据集 当前循环t
         n = 0
         for k in range(len(st)):
             # newWt为当前client k的训练所得的参数；nk为client k的本地的训练集个数；
@@ -270,16 +271,22 @@ def server(w0 = 0):
         weights = np.zeros_like(listWAndnk[k][0][0])
         bias = np.zeros_like(listWAndnk[k][0][1])
 
-        # TODO(fallenkliu@gamail.com): accelerates parameter weights abd bias
+        # TODO(fallenkliu@gmail.com): accelerates parameter weights abd bias
         if wt == 0:
             wt = np.zeros_like(np.array([weights, bias]))
-
+        # 更新每次迭代的参数
         for k in range(len(listWAndnk)):
             weights += np.asarray(listWAndnk[k][0][0])*listWAndnk[k][1]/n
             bias += np.asarray(listWAndnk[k][0][1])*listWAndnk[k][1]/n
+        # 全局总的训练集
+        sumN +=n
 
-        # 更新全局参数 累计
-        wt += np.array([weights, bias])
+        # 更新全局参数 累计; 之前的参数*((sumN-n) /sum)+ 现在的参数*(n/(sumN))
+        lastWt = np.array([wt[0]*((sumN-n)/sumN), wt[1]*((sumN-n)/sumN)])
+        currentWt = np.array([weights*(n*sumN), bias*(n/sumN)])
+        wt =  lastWt + currentWt
+        print("总的循环次数t:%d:"%t)
+        print("当前更新的wt:\n", wt)
 
     print("=======>更新后的wt:\n", wt)
 if __name__ == "__main__":
