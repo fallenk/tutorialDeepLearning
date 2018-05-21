@@ -115,10 +115,10 @@ def trainAndTest(k, wt, batch_size, epoch):
     '''
     # 定义 两个 卷积层和pool层
     # 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
-    conv1 = Conv2D([batch_size, 28, 28, 1], 12, 5, 1)
+    conv1 = Conv2D([batch_size, 28, 28, 1], 12, 5, 1, "VALID", wt)
     relu1 = Relu(conv1.output_shape)
     pool1 = MaxPooling(relu1.output_shape)
-    conv2 = Conv2D(pool1.output_shape, 24, 3, 1)
+    conv2 = Conv2D(pool1.output_shape, 24, 3, 1, "VALID", wt)
     relu2 = Relu(conv2.output_shape)
     pool2 = MaxPooling(relu2.output_shape)
     fc = FullyConnect(pool2.output_shape, 10)
@@ -244,17 +244,19 @@ def server(w0 = 0):
     '''
     # 1. initialize w0
     # w0 = np.zeros()
+    # TODO(fallekliu@gmail.com): global train times
     # 2. 总的全局训练次数
     t = 1
-    wt = w0 # 初始化
+    wt = w0 # 初始化 t
     for _ in range(t):
         # 3. 选择一批client 集合
         # m←max(C ·K, 1): m 为c个clients和
         # St ←(random set of m clients) : 每次从m个中选取St个clients
-        st = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        listWAndnk = []
+        # st = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        st = np.array([0])
+        listWAndnk = [] # 当前一次总的训练得到的参数
 
-        # 客户端的训练个数
+        # 所有clients 训练的训练数据集
         n = 0
         for k in range(len(st)):
             # newWt为当前client k的训练所得的参数；nk为client k的本地的训练集个数；
@@ -263,9 +265,19 @@ def server(w0 = 0):
             listWAndnk.append((newWkt, nk))
         # 4. 更新w值(加权平均)
         # Wt+1 <-- sum(Nk/n * Wt+1): 即n个clients的参数加权求和得出全局的Wt+1
+        # list 转为np.array
+        listWAndnk = np.asarray(listWAndnk)
+        weights = np.zeros_like(listWAndnk[k][0][0])
+        bias = np.zeros_like(listWAndnk[k][0][1])
         for k in range(len(listWAndnk)):
-            wt = (listWAndnk[k][0]*listWAndnk[k][1])/n
-    print("更新后的wt:", wt)
+            weights += np.asarray(listWAndnk[k][0][0])*listWAndnk[k][1]/n
+            bias += np.asarray(listWAndnk[k][0][1])*listWAndnk[k][1]/n
+
+        #TODO(fallenkliu@gamail.com): accelerates parameter weights abd bias
+        # 更新全局参数 累计
+        wt = np.array([weights, bias])
+
+    print("=======>更新后的wt:\n", wt)
 if __name__ == "__main__":
 
     server(0)
