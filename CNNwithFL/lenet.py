@@ -269,13 +269,17 @@ def server(w0 = 0):
         listWAndnk = np.asarray(listWAndnk)
         weights = np.zeros_like(listWAndnk[k][0][0])
         bias = np.zeros_like(listWAndnk[k][0][1])
+
+        # TODO(fallenkliu@gamail.com): accelerates parameter weights abd bias
+        if wt == 0:
+            wt = np.zeros_like(np.array([weights, bias]))
+
         for k in range(len(listWAndnk)):
             weights += np.asarray(listWAndnk[k][0][0])*listWAndnk[k][1]/n
             bias += np.asarray(listWAndnk[k][0][1])*listWAndnk[k][1]/n
 
-        #TODO(fallenkliu@gamail.com): accelerates parameter weights abd bias
         # 更新全局参数 累计
-        wt = np.array([weights, bias])
+        wt += np.array([weights, bias])
 
     print("=======>更新后的wt:\n", wt)
 if __name__ == "__main__":
