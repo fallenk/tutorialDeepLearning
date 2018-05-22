@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # _*_ coding:utf-8 _*_
 import numpy as np
-from layers.base_conv import Conv2D
-from layers.fc import FullyConnect
+from layers.base_convolution import Conv2D
+from layers.fullyconnect import FullyConnect
 from layers.pooling import MaxPooling, AvgPooling
-from layers.softmax import Softmax
-from layers.relu import Relu
+from layers.loss import Softmax
+from layers.activator import Relu
 
 import time
 import struct
