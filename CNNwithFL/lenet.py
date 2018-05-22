@@ -115,7 +115,7 @@ def trainAndTest(k, wt, batch_size, epoch):
     '''
     # 定义 两个 卷积层和pool层
     # 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
-    conv1 = Conv2D([batch_size, 28, 28, 1], 12, 5, 1, "VALID", wt)
+    conv1 = Conv2D([batch_size, 28, 28, 1], 12, 5, 1, "VALID", wt, 1)
     relu1 = Relu(conv1.output_shape)
     pool1 = MaxPooling(relu1.output_shape)
     conv2 = Conv2D(pool1.output_shape, 24, 3, 1, "VALID", wt)
@@ -253,8 +253,8 @@ def server(w0 = 0):
         # 3. 选择一批client 集合
         # m←max(C ·K, 1): m 为c个clients和
         # St ←(random set of m clients) : 每次从m个中选取St个clients
-        st = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-        # st = np.array([0])
+        # st = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        st = np.array([0, 1])
         listWAndnk = [] # 当前一次总的训练得到的参数
 
         # 所有clients 训练的训练数据集 当前循环t
@@ -285,7 +285,7 @@ def server(w0 = 0):
         lastWt = np.array([wt[0]*((sumN-n)/sumN), wt[1]*((sumN-n)/sumN)])
         currentWt = np.array([weights*(n*sumN), bias*(n/sumN)])
         wt =  lastWt + currentWt
-        print("总的循环次数t:%d:"%t)
+        print("总的循环次数t:%d:"%i)
         print("当前更新的wt:\n", wt)
 
     print("=======>更新后的wt:\n", wt)

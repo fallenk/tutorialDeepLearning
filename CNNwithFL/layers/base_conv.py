@@ -5,12 +5,12 @@ import math
 
 
 class Conv2D(object):
-    # 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
-    def __init__(self, shape, output_channels, ksize=3, stride=1, method='VALID', wt=0):
+    # [batch_size, 28, 28, 1], 12, 5, 1, "VALID", wt
+    def __init__(self, shape, output_channels, ksize=3, stride=1, method='VALID', wt=0, isFirstConv = 2):
         '''
-        输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
+        输入数据的shape, filter的个数，filter的尺寸， 步长， 是否通过padding输出原尺寸大小, wt 模型参数， isFirstConv是否第二层参数,默认取二
         '''
-        self.input_shape = shape
+        self.input_shape = shape # [batch_size, 28, 28, 1]
         self.output_channels = output_channels
         self.input_channels = shape[-1]
         self.batchsize = shape[0]
@@ -18,16 +18,17 @@ class Conv2D(object):
         self.ksize = ksize
         self.method = method
         self.wt = wt
-
+        self.isFirstConv = isFirstConv
+        # 设置参数初始化，进行normalization, 加速收敛
         weights_scale = math.sqrt(reduce(lambda x, y: x * y, shape) / self.output_channels)
         self.weights = np.random.standard_normal(
             (ksize, ksize, self.input_channels, self.output_channels)) / weights_scale
         self.bias = np.random.standard_normal(self.output_channels) / weights_scale
         # TODO(fallenkliu@gmail.com): if global train times > 1 change weights and bias
-        # 判断传入参数 非0则表示
-        # if wt != 0:
-        #     self.weights = wt[0]
-        #     self.bias = wt[1]
+        # 判断传入参数 非0则表示 修改第一层的参数
+        if wt != 0 and self.isFirstConv == 1:
+            self.weights = wt[0]
+            self.bias = wt[1]
 
         if method == 'VALID':
             self.eta = np.zeros((shape[0], int((shape[1] - ksize + 1) / self.stride), int((shape[1] - ksize + 1) / self.stride),
