@@ -31,7 +31,7 @@ def load_mnist(path, kind='train'):
     # listdata = []
     # for j in range(len(labels)):
     #     listdata.append(images[j])
-
+    #TODO(fallenkliu@gmail.com): change the way of getting data
     imagesOne = []
     labelsOne = []
 
