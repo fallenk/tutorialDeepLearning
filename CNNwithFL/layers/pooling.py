@@ -66,6 +66,7 @@ class AvgPooling(object):
 
 class MaxPooling(object):
     def __init__(self, shape, ksize=2, stride=2):
+        '''输入feature map; fliter的size，步长'''
         self.input_shape = shape
         self.ksize = ksize
         self.stride = stride

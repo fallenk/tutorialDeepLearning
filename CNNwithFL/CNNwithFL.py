@@ -113,7 +113,7 @@ def trainAndTest(k, wt, batch_size, epoch):
     :param epoch: 整体训练次数
     :return: 训练好的参数wt， 所用训练的数据集个数nk(根据k的大小)
     '''
-    # 定义 两个 卷积层和pool层
+    # 构建 两个 卷积层和pool层
     # 输入数据的shape, 卷积核的个数，卷积核的尺寸， 步长， 是否输出原尺寸大小
     conv1 = Conv2D([batch_size, 28, 28, 1], 12, 5, 1, "VALID", wt, 1)
     relu1 = Relu(conv1.output_shape)
@@ -177,7 +177,7 @@ def trainAndTest(k, wt, batch_size, epoch):
                 fc.backward(alpha=learning_rate, weight_decay=0.0004)
                 conv2.backward(alpha=learning_rate, weight_decay=0.0004)
                 conv1.backward(alpha=learning_rate, weight_decay=0.0004)
-
+                conv1.backward()
                 if i % 50 == 0:
                     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + \
                           "  epoch: %d ,  batch: %5d , avg_batch_acc: %.4f  avg_batch_loss: %.4f  learning_rate %f" % (epoch,
