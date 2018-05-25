@@ -1,5 +1,5 @@
 import numpy as np
-
+# soft max使用
 class Softmax(object):
     def __init__(self, shape):
         self.softmax = np.zeros(shape)

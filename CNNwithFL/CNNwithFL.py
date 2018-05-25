@@ -147,6 +147,7 @@ def trainAndTest(k, wt, batch_size, epoch):
         train_loss = 0
 
         for i in range(images.shape[0] // batch_size):
+            # one piece of image and label 28*28; batch_size is 64
             img = images[i * batch_size:(i + 1) * batch_size].reshape([batch_size, 28, 28, 1])
             label = labels[i * batch_size:(i + 1) * batch_size]
             conv1_out = relu1.forward(conv1.forward(img))
