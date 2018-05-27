@@ -61,45 +61,18 @@ def load_mnist(path, kind='train'):
 
     imagesZero = []
     labelsZero = []
+    categoryImages = [imagesZero, imagesOne, imagesTwo, imagesThree, imagesFour, imagesFive, imagesSix, imagesSeven,
+                      imagesEight, imagesNine]
+    categoryLabels = [labelsZero, labelsOne, labelsTwo, labelsThree, labelsFour, labelsFive, labelsSix, labelsSeven,
+                      labelsEight, labelsNine]
     for i in range(len(labels)):
-        num =  labels[i]
-        if num == 0:
-            imagesZero.append(images[i])
-            labelsZero.append(labels[i])
-        elif num == 1:
-            imagesOne.append(images[i])
-            labelsOne.append(labels[i])
-        elif num == 2:
-            imagesTwo.append(images[i])
-            labelsTwo.append(labels[i])
-        elif num == 3:
-            imagesThree.append(images[i])
-            labelsThree.append(labels[i])
-        elif num == 4:
-            imagesFour.append(images[i])
-            labelsFour.append(labels[i])
-        elif num == 5:
-            imagesFive.append(images[i])
-            labelsFive.append(labels[i])
-        elif num == 6:
-            imagesSix.append(images[i])
-            labelsSix.append(labels[i])
-        elif num == 7:
-            imagesSeven.append(images[i])
-            labelsSeven.append(labels[i])
-        elif num == 8:
-            imagesEight.append(images[i])
-            labelsEight.append(labels[i])
-        elif num == 9:
-            imagesNine.append(images[i])
-            labelsNine.append(labels[i])
-    categoryImages = [imagesZero, imagesOne, imagesTwo, imagesThree, imagesFour, imagesFive, imagesSix, imagesSeven,imagesEight, imagesNine]
-    categoryLabels = [labelsZero, labelsOne, labelsTwo, labelsThree, labelsFour, labelsFive, labelsSix, labelsSeven, labelsEight, labelsNine]
-
+        num = labels[i]
+        categoryImages[num].append(images[i])
+        categoryLabels[num].append(labels[i])
 
     return categoryImages, categoryLabels
 
-
+# load mnist data
 categoryImages, categoryLabels = load_mnist('./data/mnist')
 test_categoryImages, test_categoryLabels = load_mnist('./data/mnist', 't10k')
 batch_size = 64
@@ -123,6 +96,14 @@ def trainAndTest(k, wt, batch_size, epoch):
     pool2 = MaxPooling(relu2.output_shape)
     fc = FullyConnect(pool2.output_shape, 10)
     sf = Softmax(fc.output_shape)
+
+    # print out format
+    print("INPUT:28*28*1", "memory:%d*%d*%d*%d"%(batch_size, 28, 28, 1), "weights:0")
+    print("CONV1:",conv1.output_shape)
+    print("POOL1:", pool1.output_shape)
+    print("CONV2:", conv2.output_shape)
+    print("POOL2:", pool2.output_shape)
+    print("fc:", fc.output_shape)
 
 
     # 根据k 数据分类
@@ -181,9 +162,9 @@ def trainAndTest(k, wt, batch_size, epoch):
                 conv1.backward()
                 if i % 50 == 0:
                     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + \
-                          "  epoch: %d ,  batch: %5d , avg_batch_acc: %.4f  avg_batch_loss: %.4f  learning_rate %f" % (epoch,
+                          "  epoch: %d ,  batch: %5d , avg_batch_acc: %.4f learning_rate %f" % (epoch,
                                                                                                      i, batch_acc / float(
-                              batch_size), batch_loss / batch_size, learning_rate))
+                              batch_size), learning_rate))
                     # print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()) + \
                     #       "  epoch: %d ,  batch: %5d " % (epoch, i))
 
@@ -191,8 +172,8 @@ def trainAndTest(k, wt, batch_size, epoch):
                 batch_acc = 0
 
         print(time.strftime("%Y-%m-%d %H:%M:%S",
-                            time.localtime()) + "  epoch: %5d ,client train label:%s, train_acc: %.4f  avg_train_loss: %.4f" % (
-                  epoch, labels[0], train_acc / float(images.shape[0]), train_loss / images.shape[0]))
+                            time.localtime()) + "  epoch: %5d ,client train label:%s, train_acc: %.4f " % (
+                  epoch, labels[0], train_acc / float(images.shape[0])))
 
         # validation
         for i in range(test_images.shape[0] // batch_size):
@@ -232,9 +213,10 @@ def clientUpdate(k, wt):
     print("client %d will begin training" % k)
     # 2. 传入参数， 训练数据(根据k进行识别编号)，测试数据, 得到返回参数
     newWkt, nk = trainAndTest(k, wt, batch_size, epoch)
-    print("======>newWkt:\n", newWkt)
-    print("======>nk:\n", nk)
-    print("client %d train finished" % k)
+    #TODO(fallenkliu@gmail.com): setting parameters
+    print("当前参数newWkt:\n", newWkt)
+    print("当前client训练集个数:", nk)
+    print("=================client %d train finished=================" % k)
     return newWkt, nk
 
 # server execute
@@ -248,7 +230,7 @@ def server(w0 = 0):
     # TODO(fallekliu@gmail.com): global train times
     # 2. 总的全局训练次数
     t = 2
-    wt = w0 # 初始化 t
+    wt = w0 # 全局参数学习
     sumN = 0 # 全局总的训练集个数
     for i in range(t):
         # 3. 选择一批client 集合
@@ -272,10 +254,10 @@ def server(w0 = 0):
         weights = np.zeros_like(listWAndnk[k][0][0])
         bias = np.zeros_like(listWAndnk[k][0][1])
 
-        # TODO(fallenkliu@gmail.com): accelerates parameter weights abd bias
+        # accumulate weights and bias
         if wt == 0:
             wt = np.zeros_like(np.array([weights, bias]))
-        # 更新每次迭代的参数
+        # 当前更新每次迭代的参数
         for k in range(len(listWAndnk)):
             weights += np.asarray(listWAndnk[k][0][0])*listWAndnk[k][1]/n
             bias += np.asarray(listWAndnk[k][0][1])*listWAndnk[k][1]/n
@@ -286,10 +268,10 @@ def server(w0 = 0):
         lastWt = np.array([wt[0]*((sumN-n)/sumN), wt[1]*((sumN-n)/sumN)])
         currentWt = np.array([weights*(n*sumN), bias*(n/sumN)])
         wt =  lastWt + currentWt
-        print("总的循环次数t:%d:"%i)
-        print("当前更新的wt:\n", wt)
+        print("当前更新的全局参数:\n", wt)
+        print("=================总的循环次数t:%d=================" % (i+1))
 
-    print("=======>更新后的wt:\n", wt)
+    print("所有迭代更新完成的全局参数:\n", wt)
 if __name__ == "__main__":
 
     server(0)
